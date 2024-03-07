@@ -1,7 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS 1
 #include "ObjectPool.h"
-#include <vector>
-#include <time.h>
+#include "Common.h"
+#include "ConcurrentAlloc.h"
 
 struct TreeNode
 {
@@ -69,8 +69,36 @@ void TestObjectPool()
 	cout << "ObjectPoolºÄÊ±:" << end2 - begin2 << "ms" << endl;
 }
 
+void Alloc1()
+{
+	for (size_t i = 0; i < 5; ++i)
+	{
+		void* ptr = ConcurrentAlloc(6);
+	}
+}
+
+void Alloc2()
+{
+	for (size_t i = 0; i < 5; ++i)
+	{
+		void* ptr = ConcurrentAlloc(100);
+	}
+}
+
+void TestTLS()
+{
+	std::thread t1(Alloc1);
+	t1.join();
+
+	std::thread t2(Alloc2);
+	t2.join();
+}
+
 int main()
 {
-	TestObjectPool();
+	//TestObjectPool();
+
+	TestTLS();
+
 	return 0;
 }
