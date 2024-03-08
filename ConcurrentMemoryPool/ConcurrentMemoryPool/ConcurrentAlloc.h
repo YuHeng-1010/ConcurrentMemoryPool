@@ -10,8 +10,8 @@ static void* ConcurrentAlloc(size_t size)
 		pTLSThreadCache = new ThreadCache;
 	}
 
-	// test
-	cout << std::this_thread::get_id() << ":" << pTLSThreadCache << endl;
+	//test
+	//cout << std::this_thread::get_id() << ":" << pTLSThreadCache << endl;
 
 	return pTLSThreadCache->Allocate(size);
 }
