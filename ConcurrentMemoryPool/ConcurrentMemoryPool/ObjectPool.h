@@ -1,5 +1,5 @@
 #pragma once
-#include <iostream>
+#include "Common.h"
 
 using std::cout;
 using std::endl;
@@ -10,19 +10,6 @@ using std::endl;
 	// Linux下brk、mmap的头文件
 #endif
 
-inline static void* SystemAlloc(size_t kpage)
-{
-#ifdef _WIN32
-	void* ptr = VirtualAlloc(0, kpage << 13, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-#else
-	// Linux下采用brk、mmap等
-#endif
-	
-	if (ptr == nullptr)
-		throw std::bad_alloc();
-
-	return ptr;
-}
 
 template<class T>
 class ObjectPool

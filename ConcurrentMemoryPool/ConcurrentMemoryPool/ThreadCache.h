@@ -10,6 +10,9 @@ public:
 
 	// 从中心缓存获取对象
 	void* FetchFromCentralCache(size_t index, size_t size);
+
+	// 当释放对象而链表过长时，将回收的内存还给central cache
+
 private:
 	FreeList _freeLists[NFREELIST];
 };

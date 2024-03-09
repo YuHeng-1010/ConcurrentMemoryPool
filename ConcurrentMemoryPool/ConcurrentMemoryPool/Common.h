@@ -10,11 +10,19 @@
 #include <thread>
 #include <mutex>
 
+#ifdef _WIN32
+	#include <Windows.h>
+#else
+	// Linux
+#endif
+
 using std::cout;
 using std::endl;
 
 static const size_t MAX_BYTES = 256 * 1024;	// 向thread cache申请的最大内存数，超过则直接向page cache申请。
 static const size_t NFREELIST = 208;		// 哈希桶的个数
+static const size_t NPAGES = 129;			// 页数
+static const size_t PAGE_SHIFT = 13;		// 2^13=8k
 
 #ifdef _WIN64
 	typedef unsigned long long PAGE_ID;
@@ -24,6 +32,20 @@ static const size_t NFREELIST = 208;		// 哈希桶的个数
 	// Linux
 #endif
 
+// 直接去堆上按页申请空间
+inline static void* SystemAlloc(size_t kpage)
+{
+#ifdef _WIN32
+	void* ptr = VirtualAlloc(0, kpage << 13, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+#else
+	// linux下brk mmap等
+#endif
+
+	if (ptr == nullptr)
+		throw std::bad_alloc();
+
+	return ptr;
+}
 
 // 计算下一个结点的地址
 static void*& NextObj(void* obj)
@@ -173,6 +195,18 @@ public:
 
 		return num;
 	}
+
+	// 计算一次向系统获取多少页
+	static size_t NumMovePage(size_t size)
+	{
+		size_t num = NumMoveSize(size);
+		size_t npage = (num * size) >> PAGE_SHIFT;
+
+		if (npage == 0)
+			npage = 1;
+
+		return npage;
+	}
 };
 
 
@@ -200,6 +234,28 @@ public:
 		_head->_prev = _head;
 	}
 
+	Span* Begin()
+	{
+		return _head->_next;
+	}
+
+	Span* End()
+	{
+		return _head;
+	}
+
+	void PushFront(Span* span)
+	{
+		Insert(Begin(), span);
+	}
+
+	Span* PopFront()
+	{
+		Span* span = _head->_next;
+		Erase(span);
+		return span;
+	}
+
 	void Insert(Span* pos, Span* newSpan)
 	{
 		assert(pos);
@@ -223,6 +279,11 @@ public:
 
 		prev->_next = next;
 		next->_prev = prev;
+	}
+
+	bool Empty()
+	{
+		return _head == _head->_next;
 	}
 
 private:

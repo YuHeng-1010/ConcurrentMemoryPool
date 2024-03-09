@@ -36,7 +36,7 @@ void* ThreadCache::FetchFromCentralCache(size_t index, size_t size)
 	// 慢开始反馈调节算法
 	// 最开始不会向central cache要太多内存
 	// 如果不要size的内存，则会使MaxSize不断增加，直到达到上限
-	size_t batchNum = std::min(_freeLists[index].MaxSize(), SizeClass::NumMoveSize(size));
+	size_t batchNum = min(_freeLists[index].MaxSize(), SizeClass::NumMoveSize(size));
 	if (batchNum == _freeLists[index].MaxSize())
 		_freeLists[index].MaxSize() += 1;
 
