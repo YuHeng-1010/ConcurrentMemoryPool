@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <vector>
+#include <unordered_map>
 #include <algorithm>
 
 #include <time.h>
@@ -19,7 +20,7 @@
 using std::cout;
 using std::endl;
 
-static const size_t MAX_BYTES = 256 * 1024;	// 向thread cache申请的最大内存数，超过则直接向page cache申请。
+static const size_t MAX_BYTES = 256 * 1024;	// 向thread cache申请的最大内存数，超过则直接向page cache申请
 static const size_t NFREELIST = 208;		// 哈希桶的个数
 static const size_t NPAGES = 129;			// 页数
 static const size_t PAGE_SHIFT = 13;		// 2^13=8k
@@ -61,13 +62,15 @@ public:
 		assert(obj);
 
 		NextObj(obj) = _freeList;
-		_freeList = *(void**)obj;
+		_freeList = obj;
+		++_size;
 	}
 
-	void PushRange(void* begin, void* end)
+	void PushRange(void* begin, void* end, size_t n)
 	{
 		NextObj(end) = _freeList;
 		_freeList = begin;
+		_size += n;
 	}
 
 	void* Pop()
@@ -76,8 +79,25 @@ public:
 
 		void* obj = _freeList;
 		_freeList = NextObj(_freeList);
+		--_size;
 
 		return obj;
+	}
+	
+	void PopRange(void*& begin, void*& end, size_t n)
+	{
+		assert(n <= _size);
+		begin = _freeList;
+		end = begin;
+
+		for (size_t i = 0; i < n - 1; ++i)
+		{
+			end = NextObj(end);
+		}
+
+		_freeList = NextObj(end);
+		NextObj(end) = nullptr;
+		_size -= n;
 	}
 
 	bool Empty()
@@ -90,9 +110,15 @@ public:
 		return _maxSize;
 	}
 
+	size_t Size()
+	{
+		return _size;
+	}
+
 private:
 	void* _freeList = nullptr;
 	size_t _maxSize = 1;
+	size_t _size = 0;
 };
 
 // 计算对象大小的对齐映射规则
@@ -213,14 +239,16 @@ public:
 // 管理多个连续页大块内存跨度结构
 struct Span
 {
-	PAGE_ID _pageId = 0; // 大块内存起始页的页号
-	size_t  _n = 0;      // 页的数量
+	PAGE_ID _pageId = 0;		// 大块内存起始页的页号
+	size_t  _n = 0;				// 页的数量
 
-	Span* _next = nullptr;	// 双向链表的结构
+	Span* _next = nullptr;		// 双向链表的结构
 	Span* _prev = nullptr;
 
-	size_t _useCount = 0; // 切好小块内存，被分配给thread cache的计数
+	size_t _useCount = 0;		// 切好小块内存，被分配给thread cache的计数
 	void* _freeList = nullptr;  // 切好的小块内存的自由链表
+
+	bool _isUse = false;		// 是否在被使用
 };
 
 // 带头双向循环链表
