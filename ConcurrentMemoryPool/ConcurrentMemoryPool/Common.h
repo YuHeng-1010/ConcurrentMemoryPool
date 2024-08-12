@@ -125,7 +125,11 @@ private:
 class SizeClass
 {
 public:
-	// 整体控制在最多11%左右的内碎片浪费
+	// 申请 129				byte内存，浪费 15 / (128 + 16)		= 10.42% 内存
+	// 申请 1025				byte内存，浪费 127 / (1024 + 128)	= 11.02% 内存
+	// 申请 8 * 1024 + 1		byte内存，浪费 1023 / (8096 + 1024)	= 11.22% 内存
+	// 申请 64 * 1024 + 1	byte内存，浪费 8095 / (65536 + 8096)	= 10.99% 内存
+	// 整体控制在最多 11% 左右的内碎片浪费
 	// 
 	// 申请的内存数              对齐数			哈希桶分区            
 	// [1,128]					8byte对齐	    freelist[0,16)
@@ -139,6 +143,7 @@ public:
 		return ((bytes + alignNum - 1) & ~(alignNum - 1));
 	}
 
+	// 将 size 进行对齐，例：RoundUp(128) = 128, RoundUp(129) = 144,
 	static inline size_t RoundUp(size_t size)
 	{
 		if (size <= 128)
@@ -167,12 +172,13 @@ public:
 		}
 		return -1;
 	}
-
+	
 	static inline size_t _Index(size_t bytes, size_t align_shift)
 	{
 		return ((bytes + (1 << align_shift) - 1) >> align_shift) - 1;
 	}
 
+	// 计算 size 对应的哈希桶下标
 	static inline size_t Index(size_t size)
 	{
 		assert(size <= MAX_BYTES);
@@ -207,7 +213,7 @@ public:
 		return -1;
 	}
 
-	// 一次thread cache从central cache里获取多少个
+	// thread cache一次从central cache里获取多少个对象
 	static size_t NumMoveSize(size_t size)
 	{
 		assert(size > 0);

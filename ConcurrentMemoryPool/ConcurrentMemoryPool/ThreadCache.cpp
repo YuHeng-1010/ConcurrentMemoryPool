@@ -10,10 +10,12 @@ void* ThreadCache::Allocate(size_t size)
 	size_t alighSize = SizeClass::RoundUp(size);
 	size_t index = SizeClass::Index(size);
 
+	// index号哈希桶不为空
 	if (!_freeLists[index].Empty())
 	{
 		return _freeLists[index].Pop();
 	}
+	// index号哈希桶为空
 	else
 	{
 		return FetchFromCentralCache(index, alighSize);
@@ -50,7 +52,7 @@ void* ThreadCache::FetchFromCentralCache(size_t index, size_t size)
 {
 	// 慢开始反馈调节算法
 	// 最开始不会向central cache要太多内存
-	// 如果不要size的内存，则会使MaxSize不断增加，直到达到上限
+	// 如果不要size大小的内存，则会使MaxSize不断增加，直到达到上限
 	size_t batchNum = min(_freeLists[index].MaxSize(), SizeClass::NumMoveSize(size));
 	if (batchNum == _freeLists[index].MaxSize())
 		_freeLists[index].MaxSize() += 1;

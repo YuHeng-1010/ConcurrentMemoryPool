@@ -47,7 +47,7 @@ Span* PageCache::NewSpan(size_t k)
 		}
 	}
 
-	// 走到这里表示所有桶里都没有span，于是去向堆申请128页span
+	// 走到这里表示第k个桶及以后的桶里都没有span，于是去向堆申请128页span
 	Span* maxSpan = new Span;
 	void* ptr = SystemAlloc(NPAGES - 1);
 	maxSpan->_pageId = (PAGE_ID)ptr >> PAGE_SHIFT;

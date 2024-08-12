@@ -22,7 +22,11 @@ private:
 	PageCache()
 	{}
 
+	~PageCache()
+	{}
+
 	PageCache(const PageCache&) = delete;
+	PageCache& operator=(const PageCache&) = delete;
 
 public:
 	std::mutex _pageMtx;

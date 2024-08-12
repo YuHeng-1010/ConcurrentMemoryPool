@@ -39,10 +39,10 @@ Span* CentralCache::GetOneSpan(SpanList& spanlist, size_t size)
 	span->_freeList = begin;
 	begin += size;
 	void* tail = span->_freeList;
-	int i = 1;
+	//int i = 1;
 	while (begin < end)
 	{
-		++i;
+		//++i;
 		NextObj(tail) = begin;
 		tail = NextObj(tail); // tail = start;
 		begin += size;

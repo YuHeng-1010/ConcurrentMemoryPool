@@ -134,18 +134,24 @@ void TestAddressShift()
 	}
 }
 
+void TestAllocAndFree()
+{
+	void* p1 = ConcurrentAlloc(6);
+	ConcurrentFree(p1, 6);
+}
+
 void MultiThreadAlloc1()
 {
 	std::vector<void*> v;
 	for (size_t i = 0; i < 7; ++i)
 	{
-		void* ptr = ConcurrentAlloc(6);
+		void* ptr = ConcurrentAlloc(1024);
 		v.push_back(ptr);
 	}
 
 	for (auto e : v)
 	{
-		ConcurrentFree(e, 6);
+		ConcurrentFree(e, 1024);
 	}
 }
 
@@ -183,7 +189,9 @@ int main()
 
 	//TestAddressShift(); // 8*1024
 
-	TestMultiThread();
+	TestAllocAndFree();
+
+	//TestMultiThread();
 
 	return 0;
 }
