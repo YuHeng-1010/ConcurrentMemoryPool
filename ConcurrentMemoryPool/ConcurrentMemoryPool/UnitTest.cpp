@@ -67,8 +67,8 @@ void TestObjectPool()
 	}
 	size_t end2 = clock();
 
-	cout << "new耗时:" << end1 - begin1 << "ms" << endl;
-	cout << "ObjectPool耗时:" << end2 - begin2 << "ms" << endl;
+	std::cout << "new耗时:" << end1 - begin1 << "ms" << std::endl;
+	std::cout << "ObjectPool耗时:" << end2 - begin2 << "ms" << std::endl;
 }
 
 void Alloc1()
@@ -104,11 +104,11 @@ void TestConcurrentAlloc1()
 	void* p4 = ConcurrentAlloc(7);
 	void* p5 = ConcurrentAlloc(8);
 
-	cout << p1 << endl;
-	cout << p2 << endl;
-	cout << p3 << endl;
-	cout << p4 << endl;
-	cout << p5 << endl;
+	std::cout << p1 << std::endl;
+	std::cout << p2 << std::endl;
+	std::cout << p3 << std::endl;
+	std::cout << p4 << std::endl;
+	std::cout << p5 << std::endl;
 }
 
 void TestConcurrentAlloc2()
@@ -116,11 +116,11 @@ void TestConcurrentAlloc2()
 	for (size_t i = 0; i < 1024; ++i)
 	{
 		void* p1 = ConcurrentAlloc(6);
-		cout << p1 << endl;
+		std::cout << p1 << std::endl;
 	}
 
 	void* p2 = ConcurrentAlloc(8);
-	cout << p2 << endl;
+	std::cout << p2 << std::endl;
 }
 
 void TestAddressShift()
@@ -131,7 +131,7 @@ void TestAddressShift()
 	char* p2 = (char*)(id2 << PAGE_SHIFT);
 	while (p1 < p2)
 	{
-		cout << (void*)p1 << ":" << ((PAGE_ID)p1 >> PAGE_SHIFT) << endl;
+		std::cout << (void*)p1 << ":" << ((PAGE_ID)p1 >> PAGE_SHIFT) << std::endl;
 		p1 += 8;
 	}
 }
@@ -179,6 +179,17 @@ void TestMultiThread()
 
 	t1.join();
 	t2.join();
+}
+
+void BigAlloc()
+{
+	// 申请释放一次257KB内存，验证大块内存申请释放，调试观察向page cache切分和合并大块页的逻辑
+	void* p1 = ConcurrentAlloc(257 * 1024);
+	ConcurrentFree(p1, 257 * 1024);
+
+	// 申请释放一次129*8KB内存，验证超大块内存申请释放，调试观察向堆申请释放内存逻辑
+	void* p2 = ConcurrentAlloc(129 * 8 * 1024);
+	ConcurrentFree(p2, 129 * 8 * 1024);
 }
 
 #if 0
@@ -272,11 +283,11 @@ void BenchmarkConcurrentMalloc(size_t ntimes, size_t nworks, size_t rounds)
 void ContrastMallocAndConcurrentMalloc()
 {
 	size_t n = 10000;
-	cout << "==========================================================" << endl;
+	std::cout << "==========================================================" << std::endl;
 	BenchmarkConcurrentMalloc(n, 4, 10);
-	cout << endl << endl;
+	std::cout << std::endl << std::endl;
 	BenchmarkMalloc(n, 4, 10);
-	cout << "==========================================================" << endl;
+	std::cout << "==========================================================" << std::endl;
 }
 #endif
 
@@ -295,6 +306,8 @@ int main()
 	//TestMultiThread();
 
 	//ContrastMallocAndConcurrentMalloc();
+
+	BigAlloc();
 
 	return 0;
 }

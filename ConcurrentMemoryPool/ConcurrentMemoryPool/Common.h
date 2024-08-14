@@ -17,9 +17,6 @@
 	// Linux
 #endif
 
-using std::cout;
-using std::endl;
-
 static const size_t MAX_BYTES = 256 * 1024;	// 向thread cache申请的最大内存数，超过则直接向page cache申请
 static const size_t NFREELIST = 208;		// 哈希桶的个数
 static const size_t NPAGES = 129;			// 页数
@@ -46,6 +43,15 @@ inline static void* SystemAlloc(size_t kpage)
 		throw std::bad_alloc();
 
 	return ptr;
+}
+
+inline static void SystemFree(void* ptr)
+{
+#ifdef _WIN32
+	VirtualFree(ptr, 0, MEM_RELEASE);
+#else
+	// sbrk unmmap等
+#endif
 }
 
 // 计算下一个结点的地址
@@ -168,7 +174,7 @@ public:
 		}
 		else
 		{
-			assert(false);
+			return _RoundUp(size, 1 << PAGE_SHIFT);
 		}
 		return -1;
 	}
@@ -251,6 +257,7 @@ struct Span
 	Span* _next = nullptr;		// 双向链表的结构
 	Span* _prev = nullptr;
 
+	size_t _objSize = 0;		// 切好的小对象的大小
 	size_t _useCount = 0;		// 切好小块内存，被分配给thread cache的计数
 	void* _freeList = nullptr;  // 切好的小块内存的自由链表
 
