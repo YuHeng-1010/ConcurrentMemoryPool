@@ -78,6 +78,7 @@ Span* PageCache::MapObjectToSpan(void* obj)
 void PageCache::ReleaseSpanToPageCache(Span* span)
 {
 	// 对span前后的页，尝试进行合并，缓解内存碎片问题
+	// 向前合并
 	while (1)
 	{
 		PAGE_ID prevId = span->_pageId - 1;
