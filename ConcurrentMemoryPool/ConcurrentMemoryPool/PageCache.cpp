@@ -12,8 +12,8 @@ Span* PageCache::NewSpan(size_t k)
 	if (k > NPAGES - 1)
 	{
 		void* ptr = SystemAlloc(k);
-		Span* span = new Span;
-		//Span* span = _spanPool.New();
+		//Span* span = new Span;
+		Span* span = _spanPool.New();
 
 		span->_pageId = (PAGE_ID)ptr >> PAGE_SHIFT;
 		span->_n = k;
@@ -45,7 +45,8 @@ Span* PageCache::NewSpan(size_t k)
 		if (!_spanLists[i].Empty())
 		{
 			Span* nSpan = _spanLists[i].PopFront();
-			Span* kSpan = new Span;
+			//Span* kSpan = new Span;
+			Span* kSpan = _spanPool.New();
 
 			// 将nSpan头k页切给kSpan
 			// 再将剩下n-k页重新挂到映射的位置
@@ -73,12 +74,13 @@ Span* PageCache::NewSpan(size_t k)
 	}
 
 	// 走到这里表示第k个桶及以后的桶里都没有span，于是去向堆申请128页span
-	Span* maxSpan = new Span;
+	//Span* bigSpan = new Span;
+	Span* bigSpan = _spanPool.New();
 	void* ptr = SystemAlloc(NPAGES - 1);
-	maxSpan->_pageId = (PAGE_ID)ptr >> PAGE_SHIFT;
-	maxSpan->_n = NPAGES - 1;
+	bigSpan->_pageId = (PAGE_ID)ptr >> PAGE_SHIFT;
+	bigSpan->_n = NPAGES - 1;
 
-	_spanLists[maxSpan->_n].PushFront(maxSpan);
+	_spanLists[bigSpan->_n].PushFront(bigSpan);
 
 	return NewSpan(k);
 }
@@ -107,8 +109,8 @@ void PageCache::ReleaseSpanToPageCache(Span* span)
 	{
 		void* ptr = (void*)(span->_pageId << PAGE_SHIFT);
 		SystemFree(ptr);
-		delete span;
-		//_spanPool.Delete(span);
+		//delete span;
+		_spanPool.Delete(span);
 
 		return;
 	}
@@ -143,7 +145,8 @@ void PageCache::ReleaseSpanToPageCache(Span* span)
 		span->_n += prevSpan->_n;
 
 		_spanLists[prevSpan->_n].Erase(prevSpan);
-		delete prevSpan;
+		//delete prevSpan;
+		_spanPool.Delete(prevSpan);
 	}
 
 	// 向后合并
@@ -170,7 +173,8 @@ void PageCache::ReleaseSpanToPageCache(Span* span)
 		span->_n += nextSpan->_n;
 
 		_spanLists[nextSpan->_n].Erase(nextSpan);
-		delete nextSpan;
+		//delete nextSpan;
+		_spanPool.Delete(nextSpan);
 	}
 
 	_spanLists[span->_n].PushFront(span);

@@ -2,6 +2,7 @@
 #include "Common.h"
 #include "ThreadCache.h"
 #include "PageCache.h"
+#include "ObjectPool.h"
 
 static void* ConcurrentAlloc(size_t size)
 {	
@@ -24,7 +25,9 @@ static void* ConcurrentAlloc(size_t size)
 		// 每个线程通过TLS无锁访问专属这个线程的thread cache对象
 		if (pTLSThreadCache == nullptr)
 		{
-			pTLSThreadCache = new ThreadCache;
+			//pTLSThreadCache = new ThreadCache;
+			static ObjectPool<ThreadCache> pool;
+			pTLSThreadCache = pool.New();
 		}
 
 		//test

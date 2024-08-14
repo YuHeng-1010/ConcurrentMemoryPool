@@ -297,7 +297,9 @@ int main()
 
 	//TestTLS();
 
-	//TestConcurrentAlloc2();
+	TestConcurrentAlloc1();
+
+	TestConcurrentAlloc2();
 
 	//TestAddressShift(); // 8*1024
 
@@ -307,7 +309,9 @@ int main()
 
 	//ContrastMallocAndConcurrentMalloc();
 
-	BigAlloc();
+	//BigAlloc();
+
+	//std::cout << sizeof(ThreadCache);
 
 	return 0;
 }

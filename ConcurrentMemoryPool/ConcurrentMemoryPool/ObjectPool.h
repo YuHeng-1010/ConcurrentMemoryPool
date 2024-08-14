@@ -1,9 +1,6 @@
 #pragma once
 #include "Common.h"
 
-using std::cout;
-using std::endl;
-
 #ifdef _WIN32
 	#include <windows.h>
 #else
@@ -60,7 +57,7 @@ public:
 	}
 
 private:
-	char* _memory = nullptr; // 指向已向系统申请但未分配给用户的内存指针
-	size_t _remainBytes = 0; // 已向系统申请但未分配给用户的剩余内存大小
-	void* _freeList = nullptr; // 空闲空间链表的头指针
+	char* _memory = nullptr;	// 指向已向系统申请但未分配给用户的内存指针
+	size_t _remainBytes = 0;	// 已向系统申请但未分配给用户的剩余内存大小
+	void* _freeList = nullptr;	// 空闲空间链表的头指针
 };
