@@ -28,7 +28,7 @@ Span* CentralCache::GetOneSpan(SpanList& spanlist, size_t size)
 	PageCache::GetInstance()->_pageMtx.lock();
 	Span* span = PageCache::GetInstance()->NewSpan(SizeClass::NumMovePage(size));
 	span->_isUse = true;
-	span->_objSize = size;
+	span->_objSize = size;	
 	PageCache::GetInstance()->_pageMtx.unlock();
 
 	// 对获取到的span进行划分，走到这里其他线程获取不到span，所以不用加锁
@@ -51,6 +51,21 @@ Span* CentralCache::GetOneSpan(SpanList& spanlist, size_t size)
 		tail = NextObj(tail); // tail = start;
 		begin += size;
 	}
+	NextObj(tail) = nullptr;
+	
+	//Debug
+	int testi = 0;
+	void* cur = span->_freeList;
+	while (cur)
+	{
+		cur = NextObj(cur);
+		testi++;
+	}
+	if (bytes / size != testi)
+	{
+		int x = 0;
+	}
+	//Debug end
 
 	// 切好span以后，需要把span挂到桶里面去的时候，再加锁
 	spanlist._mtx.lock();
@@ -83,6 +98,20 @@ size_t CentralCache::FetchRangeObj(void*& begin, void*& end, size_t batchNum, si
 	span->_freeList = NextObj(end);
 	NextObj(end) = nullptr;
 	span->_useCount += actualNum;
+
+	//Debug
+	int testi = 0;
+	void* cur = begin;
+	while (cur)
+	{
+		cur = NextObj(cur);
+		testi++;
+	}
+	if (actualNum != testi)
+	{
+		int x = 0;
+	}
+	//Debug end
 
 	_spanLists[index]._mtx.unlock();
 

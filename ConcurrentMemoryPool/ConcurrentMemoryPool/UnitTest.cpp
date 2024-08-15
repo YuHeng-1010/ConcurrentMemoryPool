@@ -139,7 +139,7 @@ void TestAddressShift()
 void TestAllocAndFree()
 {
 	void* p1 = ConcurrentAlloc(6);
-	ConcurrentFree(p1, 6);
+	ConcurrentFree(p1);
 }
 
 void MultiThreadAlloc1()
@@ -153,7 +153,7 @@ void MultiThreadAlloc1()
 
 	for (auto e : v)
 	{
-		ConcurrentFree(e, 1024);
+		ConcurrentFree(e);
 	}
 }
 
@@ -168,7 +168,7 @@ void MultiThreadAlloc2()
 
 	for (auto e : v)
 	{
-		ConcurrentFree(e, 16);
+		ConcurrentFree(e);
 	}
 }
 
@@ -185,14 +185,13 @@ void BigAlloc()
 {
 	// 申请释放一次257KB内存，验证大块内存申请释放，调试观察向page cache切分和合并大块页的逻辑
 	void* p1 = ConcurrentAlloc(257 * 1024);
-	ConcurrentFree(p1, 257 * 1024);
+	ConcurrentFree(p1);
 
 	// 申请释放一次129*8KB内存，验证超大块内存申请释放，调试观察向堆申请释放内存逻辑
 	void* p2 = ConcurrentAlloc(129 * 8 * 1024);
-	ConcurrentFree(p2, 129 * 8 * 1024);
+	ConcurrentFree(p2);
 }
 
-#if 0
 void BenchmarkMalloc(size_t ntimes, size_t nworks, size_t rounds)
 {
 	std::vector<std::thread> vthread(nworks);
@@ -229,11 +228,11 @@ void BenchmarkMalloc(size_t ntimes, size_t nworks, size_t rounds)
 		t.join();
 	}
 	printf("%u个线程并发执行%u轮次，每轮次malloc %u次: 花费：%u ms\n",
-		   nworks, rounds, ntimes, malloc_costtime);
+		   nworks, rounds, ntimes, malloc_costtime.load());
 	printf("%u个线程并发执行%u轮次，每轮次free %u次: 花费：%u ms\n",
-		   nworks, rounds, ntimes, free_costtime);
+		   nworks, rounds, ntimes, free_costtime.load());
 	printf("%u个线程并发malloc&free %u次，总计花费：%u ms\n",
-		   nworks, nworks * rounds * ntimes, malloc_costtime + free_costtime);
+		   nworks, nworks * rounds * ntimes, malloc_costtime.load() + free_costtime.load());
 }
 
 // 单轮次申请释放次数 线程数 轮次
@@ -273,11 +272,11 @@ void BenchmarkConcurrentMalloc(size_t ntimes, size_t nworks, size_t rounds)
 		t.join();
 	}
 	printf("%u个线程并发执行%u轮次，每轮次concurrent alloc %u次: 花费：%u ms\n",
-		   nworks, rounds, ntimes, malloc_costtime);
+		   nworks, rounds, ntimes, malloc_costtime.load());
 	printf("%u个线程并发执行%u轮次，每轮次concurrent dealloc %u次: 花费：%u ms\n",
-		   nworks, rounds, ntimes, free_costtime);
+		   nworks, rounds, ntimes, free_costtime.load());
 	printf("%u个线程并发concurrent alloc&dealloc %u次，总计花费：%u ms\n",
-		   nworks, nworks * rounds * ntimes, malloc_costtime + free_costtime);
+		   nworks, nworks * rounds * ntimes, malloc_costtime.load() + free_costtime.load());
 }
 
 void ContrastMallocAndConcurrentMalloc()
@@ -289,7 +288,6 @@ void ContrastMallocAndConcurrentMalloc()
 	BenchmarkMalloc(n, 4, 10);
 	std::cout << "==========================================================" << std::endl;
 }
-#endif
 
 int main()
 {
@@ -297,9 +295,9 @@ int main()
 
 	//TestTLS();
 
-	TestConcurrentAlloc1();
+	//TestConcurrentAlloc1();
 
-	TestConcurrentAlloc2();
+	//TestConcurrentAlloc2();
 
 	//TestAddressShift(); // 8*1024
 
@@ -307,7 +305,7 @@ int main()
 
 	//TestMultiThread();
 
-	//ContrastMallocAndConcurrentMalloc();
+	ContrastMallocAndConcurrentMalloc();
 
 	//BigAlloc();
 

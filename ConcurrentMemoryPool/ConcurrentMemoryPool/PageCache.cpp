@@ -89,6 +89,8 @@ Span* PageCache::NewSpan(size_t k)
 Span* PageCache::MapObjectToSpan(void* obj)
 {
 	PAGE_ID id = ((PAGE_ID)obj >> PAGE_SHIFT);
+
+	std::unique_lock<std::mutex> lock(_pageMtx);
 	auto ret = _idSpanMap.find(id);
 	if (ret != _idSpanMap.end())
 	{

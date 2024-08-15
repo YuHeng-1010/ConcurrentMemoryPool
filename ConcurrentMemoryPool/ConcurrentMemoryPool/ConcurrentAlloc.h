@@ -31,13 +31,13 @@ static void* ConcurrentAlloc(size_t size)
 		}
 
 		//test
-		std::cout << std::this_thread::get_id() << ":" << pTLSThreadCache << std::endl;
+		//std::cout << std::this_thread::get_id() << ":" << pTLSThreadCache << std::endl;
 
 		return pTLSThreadCache->Allocate(size);
 	}
 }
 
-static void ConcurrentFree(void* ptr, size_t TODOsize)
+static void ConcurrentFree(void* ptr)
 {
 	Span* span = PageCache::GetInstance()->MapObjectToSpan(ptr);
 	size_t size = span->_objSize;

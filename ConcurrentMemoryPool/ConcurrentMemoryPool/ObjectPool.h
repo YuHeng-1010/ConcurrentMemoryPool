@@ -41,7 +41,7 @@ public:
 		}
 
 		// replacement new，显式调用T的构造函数
-		new(obj)T();
+		new(obj)T;
 
 		return obj;
 	}
