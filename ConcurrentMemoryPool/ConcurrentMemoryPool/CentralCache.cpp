@@ -118,6 +118,7 @@ size_t CentralCache::FetchRangeObj(void*& begin, void*& end, size_t batchNum, si
 	return actualNum;
 }
 
+// 将begin开始的size大小内存还给central cache里的span
 void CentralCache::ReleaseListToSpans(void* begin, size_t size)
 {
 	size_t index = SizeClass::Index(size);

@@ -137,7 +137,7 @@ void PageCache::ReleaseSpanToPageCache(Span* span)
 		//	break;
 		//}
 
-		auto ret = (Span*)_idSpanMap.get(prevId);
+		Span* ret = (Span*)_idSpanMap.get(prevId);
 		if (ret == nullptr)
 		{
 			break;
@@ -176,7 +176,7 @@ void PageCache::ReleaseSpanToPageCache(Span* span)
 			break;
 		}	*/	
 		
-		auto ret = (Span*)_idSpanMap.get(nextId);
+		Span* ret = (Span*)_idSpanMap.get(nextId);
 		if (ret == nullptr)
 		{
 			break;

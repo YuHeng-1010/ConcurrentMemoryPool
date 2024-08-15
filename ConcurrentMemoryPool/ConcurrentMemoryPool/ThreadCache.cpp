@@ -38,6 +38,7 @@ void ThreadCache::Deallocate(void* ptr, size_t size)
 	}
 }
 
+// 将list里的size大小的内存还给central cache
 void ThreadCache::ListTooLong(FreeList& list, size_t size)
 {
 	void* begin = nullptr;

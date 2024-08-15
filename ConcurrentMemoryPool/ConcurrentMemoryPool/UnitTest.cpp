@@ -221,7 +221,7 @@ void BenchmarkMalloc(size_t ntimes, size_t nworks, size_t rounds)
 				malloc_costtime += (end1 - begin1);
 				free_costtime += (end2 - begin2);
 			}
-								 });
+		});
 	}
 	for (auto& t : vthread)
 	{
@@ -235,7 +235,7 @@ void BenchmarkMalloc(size_t ntimes, size_t nworks, size_t rounds)
 		   nworks, nworks * rounds * ntimes, malloc_costtime.load() + free_costtime.load());
 }
 
-// 单轮次申请释放次数 线程数 轮次
+// 单轮次申请释放次数 线程数 轮次 每次申请的内存大小
 void BenchmarkConcurrentMalloc(size_t ntimes, size_t nworks, size_t rounds)
 {
 	std::vector<std::thread> vthread(nworks);
@@ -265,7 +265,7 @@ void BenchmarkConcurrentMalloc(size_t ntimes, size_t nworks, size_t rounds)
 				malloc_costtime += (end1 - begin1);
 				free_costtime += (end2 - begin2);
 			}
-								 });
+		});
 	}
 	for (auto& t : vthread)
 	{
@@ -289,6 +289,14 @@ void ContrastMallocAndConcurrentMalloc()
 	std::cout << "==========================================================" << std::endl;
 }
 
+void TestComplexEnvironment()
+{
+	for (int i = 0; i < 100; i++)
+	{
+		ContrastMallocAndConcurrentMalloc();
+	}
+}
+
 int main()
 {
 	//TestObjectPool();
@@ -305,14 +313,14 @@ int main()
 
 	//TestMultiThread();
 
-	for (int i = 0; i < 100; i++)
-	{
-		ContrastMallocAndConcurrentMalloc();
-	}
+	//ContrastMallocAndConcurrentMalloc();
 
 	//BigAlloc();
 
 	//std::cout << sizeof(ThreadCache);
+
+	TestComplexEnvironment();
+
 
 	return 0;
 }
