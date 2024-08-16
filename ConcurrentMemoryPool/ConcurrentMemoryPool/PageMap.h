@@ -1,6 +1,6 @@
 #pragma once
 
-#include"Common.h"
+#include "Common.h"
 
 // Single-level array
 template <int BITS>
@@ -28,7 +28,7 @@ public:
 	void* get(Number k) const 
 	{
 		if ((k >> BITS) > 0)
-			return NULL;
+			return nullptr;
 		return array_[k];
 	}
 
@@ -61,7 +61,7 @@ private:
 	};
 
 	Leaf* root_[ROOT_LENGTH];             // Pointers to 32 child nodes
-	void* (*allocator_)(size_t);          // Memory allocator
+	//void* (*allocator_)(size_t);          // Memory allocator
 
 public:
 	typedef uintptr_t Number;
@@ -79,8 +79,8 @@ public:
 	{
 		const Number i1 = k >> LEAF_BITS;
 		const Number i2 = k & (LEAF_LENGTH - 1);
-		if ((k >> BITS) > 0 || root_[i1] == NULL) 
-			return NULL;
+		if ((k >> BITS) > 0 || root_[i1] == nullptr)
+			return nullptr;
 		return root_[i1]->values[i2];
 	}
 
@@ -88,7 +88,8 @@ public:
 	{
 		const Number i1 = k >> LEAF_BITS;
 		const Number i2 = k & (LEAF_LENGTH - 1);
-		ASSERT(i1 < ROOT_LENGTH);
+		//ASSERT(i1 < ROOT_LENGTH);
+		assert(i1 < ROOT_LENGTH);
 		root_[i1]->values[i2] = v;
 	}
 
@@ -103,7 +104,7 @@ public:
 				return false;
 
 			// Make 2nd level node if necessary
-			if (root_[i1] == NULL) {
+			if (root_[i1] == nullptr) {
 				//Leaf* leaf = reinterpret_cast<Leaf*>((*allocator_)(sizeof(Leaf)));
 				//if (leaf == NULL) return false;
 				static ObjectPool<Leaf>	leafPool;
@@ -157,7 +158,7 @@ private:
 	Node* NewNode() 
 	{
 		Node* result = reinterpret_cast<Node*>((*allocator_)(sizeof(Node)));
-		if (result != NULL) 
+		if (result != nullptr)
 		{
 			memset(result, 0, sizeof(*result));
 		}
@@ -179,8 +180,8 @@ public:
 		const Number i2 = (k >> LEAF_BITS)& (INTERIOR_LENGTH - 1);
 		const Number i3 = k & (LEAF_LENGTH - 1);
 		if ((k >> BITS) > 0 ||
-			root_->ptrs[i1] == NULL || root_->ptrs[i1]->ptrs[i2] == NULL) {
-			return NULL;
+			root_->ptrs[i1] == nullptr || root_->ptrs[i1]->ptrs[i2] == nullptr) {
+			return nullptr;
 		}
 		return reinterpret_cast<Leaf*>(root_->ptrs[i1]->ptrs[i2])->values[i3];
 	}
@@ -205,16 +206,16 @@ public:
 				return false;
 
 			// Make 2nd level node if necessary
-			if (root_->ptrs[i1] == NULL) {
+			if (root_->ptrs[i1] == nullptr) {
 				Node* n = NewNode();
-				if (n == NULL) return false;
+				if (n == nullptr) return false;
 				root_->ptrs[i1] = n;
 			}
 
 			// Make leaf node if necessary
-			if (root_->ptrs[i1]->ptrs[i2] == NULL) {
+			if (root_->ptrs[i1]->ptrs[i2] == nullptr) {
 				Leaf* leaf = reinterpret_cast<Leaf*>((*allocator_)(sizeof(Leaf)));
-				if (leaf == NULL) return false;
+				if (leaf == nullptr) return false;
 				memset(leaf, 0, sizeof(*leaf));
 				root_->ptrs[i1]->ptrs[i2] = reinterpret_cast<Node*>(leaf);
 			}

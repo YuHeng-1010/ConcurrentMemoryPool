@@ -37,7 +37,7 @@ private:
 
 	//std::unordered_map<PAGE_ID, Span*> _idSpanMap;
 	//std::map<PAGE_ID, Span*> _idSpanMap;	
-	TCMalloc_PageMap1<32 - PAGE_SHIFT> _idSpanMap;
+	TCMalloc_PageMap2<32 - PAGE_SHIFT> _idSpanMap;
 
 	ObjectPool<Span> _spanPool;
 
